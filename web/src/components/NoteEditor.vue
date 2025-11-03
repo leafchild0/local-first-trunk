@@ -19,6 +19,7 @@ import { ref, watch, computed } from 'vue';
 import MarkdownIt from 'markdown-it';
 import { useNotes } from '@/store/useNotes';
 import type { Note } from '@lft/shared';
+import { debounce } from 'lodash-es';
 
 const props = defineProps<{ noteId: string | null }>();
 const emit = defineEmits(['saved']);
@@ -46,6 +47,17 @@ async function save() {
   dirty.value = false;
   emit('saved');
 }
+
+const autosave = debounce(async () => {
+  if (!props.noteId) return;
+  await store.updateNote(props.noteId, {
+    title: local.value.title!,
+    content: local.value.content!,
+  });
+  dirty.value = false;
+}, 1000);
+
+watch(() => local.value.content, autosave);
 
 function discard() {
   const n = store.notes.find(x => x.id === props.noteId);
