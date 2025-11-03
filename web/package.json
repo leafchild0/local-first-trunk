@@ -12,13 +12,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lft/shared": "workspace:*",
     "@tailwindcss/vite": "^4.1.16",
     "dexie": "^4.2.1",
     "markdown-it": "^14.1.0",
     "minisearch": "^7.2.0",
+    "nanoid": "^5.1.6",
     "pinia": "^3.0.3",
-    "vue": "^3.5.22",
-    "@lft/shared": "workspace:*"
+    "vue": "^3.5.22"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",
