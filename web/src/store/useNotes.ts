@@ -16,7 +16,7 @@ export const useNotes = defineStore('notes', () => {
   }
 
   async function createNote(payload?: Partial<Note>) {
-    const now = Date.now();
+	  const now = Date.now();
     const note: Note = {
       id: nanoid(),
       title: payload?.title ?? 'Untitled',
@@ -24,7 +24,7 @@ export const useNotes = defineStore('notes', () => {
       tags: payload?.tags ?? [],
       createdAt: now,
       updatedAt: now,
-    };
+	};
     await db.notes.add(note);
     notes.value.unshift(note);
     return note;

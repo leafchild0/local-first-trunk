@@ -40,5 +40,6 @@ const formatDate = (ts: number) => new Date(ts).toLocaleString();
 </script>
 
 <style scoped>
+@reference "../style.css";
 .btn { @apply px-3 py-1 bg-slate-700 text-white rounded; }
 </style>
