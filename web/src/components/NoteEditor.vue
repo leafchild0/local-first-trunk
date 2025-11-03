@@ -23,7 +23,11 @@ import { debounce } from 'lodash-es';
 
 const props = defineProps<{ noteId: string | null }>();
 const emit = defineEmits(['saved']);
-const md = new MarkdownIt();
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+});
 const store = useNotes();
 
 const local = ref<Partial<Note>>({ title: '', content: '' });

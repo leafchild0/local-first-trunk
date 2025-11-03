@@ -1,5 +1,8 @@
 <template>
   <div class="p-4">
+  <button class="px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700" @click="exportAll">
+   		 Export All
+  		</button>
     <div class="flex items-center mb-4">
       <button class="btn" @click="newNote">+ New</button>
       <input v-model="q" placeholder="search..." class="ml-4 p-2 border rounded"/>
@@ -19,7 +22,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import { useNotes } from '@/store/useNotes';
-const props = defineProps<{ }>();
 const emit = defineEmits(['select']);
 const q = ref('');
 const store = useNotes();
@@ -35,6 +37,10 @@ const filtered = computed(() => {
   if (!q.value) return store.notes;
   return store.notes.filter(n => n.title.includes(q.value) || n.content.includes(q.value));
 });
+
+const exportAll = async () => {
+	store.exportAll();
+}
 
 const formatDate = (ts: number) => new Date(ts).toLocaleString();
 </script>

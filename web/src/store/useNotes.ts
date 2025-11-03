@@ -16,7 +16,7 @@ export const useNotes = defineStore('notes', () => {
   }
 
   async function createNote(payload?: Partial<Note>) {
-	  const now = Date.now();
+	const now = Date.now();
     const note: Note = {
       id: nanoid(),
       title: payload?.title ?? 'Untitled',
@@ -29,6 +29,23 @@ export const useNotes = defineStore('notes', () => {
     notes.value.unshift(note);
     return note;
   }
+
+	async function exportAll() {
+    const notes = (await db.notes.toArray()).map(({ id, title, content, updatedAt }) => ({
+      id, title, content, updatedAt,
+    }));
+
+	  const blob = new Blob([JSON.stringify(notes, null, 2)], {
+			type: 'application/json',
+		});
+
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `notes-backup-${new Date().toISOString()}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
 
   async function updateNote(id: string, patch: Partial<Note>) {
     const note = await db.notes.get(id);
@@ -45,5 +62,5 @@ export const useNotes = defineStore('notes', () => {
 	  notes.value = notes.value.filter((n: Note) => n.id !== id);
   }
 
-  return { notes, loading, loadAll, createNote, updateNote, deleteNote };
+  return { notes, loading, loadAll, createNote, updateNote, deleteNote, exportAll };
 });
