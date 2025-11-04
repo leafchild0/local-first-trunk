@@ -4,7 +4,10 @@
       <NoteList @select="select" />
     </aside>
     <main class="col-span-2">
-      <NoteEditor :noteId="selectedId" @saved="onSaved" />
+      <NoteEditor
+        :note-id="selectedId"
+        @saved="onSaved"
+      />
     </main>
   </div>
 </template>
@@ -16,7 +19,7 @@
 
   const selectedId = ref<string | null>(null);
   function select(id: string) { selectedId.value = id; }
-function onSaved() {
-console.log('saved')
-}
+  function onSaved() {
+    console.log('saved')
+  }
 </script>
