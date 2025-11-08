@@ -5,6 +5,8 @@ node_modules
 dist
 *.local
 
+kb-sync.db
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
