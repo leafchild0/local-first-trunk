@@ -1,4 +1,3 @@
-// packages/web/src/stores/useNotes.ts
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { db } from '@/data';

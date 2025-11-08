@@ -1,4 +1,3 @@
-// packages/web/src/db/index.ts
 import Dexie, { type Table } from 'dexie';
 import type { Note } from '@lft/shared';
 
