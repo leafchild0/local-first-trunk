@@ -2,4 +2,4 @@ packages:
   - '@lft/shared'
   - 'shared/**'
   - 'web/**'
-  - 'server-nest/**'
+  - 'server/**'
