@@ -8,5 +8,5 @@ export interface Note {
   createdAt: number;  // epoch ms
   updatedAt: number;  // epoch ms
   deleted?: boolean;
-  version?: string;   // optional version vector / etag
+  version: Record<string, number> // deviceID → logical counter
 }

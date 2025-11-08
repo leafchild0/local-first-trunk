@@ -3,12 +3,23 @@ import { defineStore } from 'pinia';
 import { db } from '@/data';
 import type { Note } from '@lft/shared';
 import { nanoid } from 'nanoid';
+import {incrementVector} from "@/sync/versionVector.ts";
 
 export const useNotes = defineStore('notes', () => {
   const notes = ref<Note[]>([]);
   const loading = ref(true);
 
-  async function loadAll() {
+    const deviceId = localStorage.getItem('deviceId') ?? (() => {
+        const id = crypto.randomUUID();
+        localStorage.setItem('deviceId', id);
+        return id;
+    })();
+
+    function nextVersionVector(old: Record<string, number> | undefined) {
+        return incrementVector(old, deviceId);
+    }
+
+    async function loadAll() {
     loading.value = true;
     notes.value = await db.notes.toArray();
     loading.value = false;
@@ -23,6 +34,7 @@ export const useNotes = defineStore('notes', () => {
       tags: payload?.tags ?? [],
       createdAt: now,
       updatedAt: now,
+      version: nextVersionVector({})
 	};
     await db.notes.add(note);
     notes.value.unshift(note);
@@ -49,7 +61,12 @@ export const useNotes = defineStore('notes', () => {
   async function updateNote(id: string, patch: Partial<Note>) {
     const note = await db.notes.get(id);
     if (!note) throw new Error('not found');
-    const updated = { ...note, ...patch, updatedAt: Date.now() };
+    const updated = {
+      ...note,
+      ...patch,
+      updatedAt: Date.now(),
+      version: nextVersionVector(note.version)
+    };
     await db.notes.put(updated);
     const idx = notes.value.findIndex((n: Note) => n.id === id);
     if (idx >= 0) notes.value[idx] = updated;
