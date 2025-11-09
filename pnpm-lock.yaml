@@ -10,6 +10,9 @@ importers:
 
   server:
     dependencies:
+      '@lft/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@nestjs/common':
         specifier: ^11.1.8
         version: 11.1.8(reflect-metadata@0.2.2)(rxjs@7.8.2)
