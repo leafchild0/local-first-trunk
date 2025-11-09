@@ -1,4 +1,3 @@
-// src/utils/search.ts
 import MiniSearch from 'minisearch';
 import type { Note } from '@lft/shared';
 

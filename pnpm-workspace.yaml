@@ -1,4 +1,5 @@
 packages:
   - '@lft/shared'
   - 'shared/**'
+  - 'web/**'
   - 'server/**'

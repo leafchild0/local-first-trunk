@@ -1,0 +1,21 @@
+### POST request to example server
+POST http://localhost:3000/sync/push
+Content-Type: application/json
+
+{
+  "deviceId": 999,
+  "notes": [
+    {
+      "id": "1",
+      "title": "First note",
+      "content": "Test Note content",
+      "tags": [],
+      "createdAt": 1762693898,
+      "updatedAt": 1762693898,
+      "version": {
+        "123": "1"
+      }
+    }
+  ]
+}
+###
