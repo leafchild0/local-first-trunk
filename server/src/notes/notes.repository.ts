@@ -15,7 +15,13 @@ export class NotesRepository {
   }
 
   getById(id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.repo
+      .findOne({
+        where: { id },
+      })
+      .then((n) =>
+        n ? { ...n, version: JSON.parse(n.version || '{}') } : null,
+      );
   }
 
   save(note: Partial<NoteEntity>) {
@@ -26,9 +32,14 @@ export class NotesRepository {
     const existing = await this.getById(incoming.id);
 
     if (!existing || incoming.updatedAt > existing.updatedAt) {
-      return this.save(incoming);
+      // Version vector passed as JSON string from client
+      return this.save({
+        ...incoming,
+        version: JSON.stringify(incoming.version ?? {}),
+      });
     }
 
+    // incoming is older → ignore, return existing
     return existing;
   }
 }

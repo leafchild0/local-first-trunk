@@ -10,13 +10,16 @@ export class SyncService {
     private readonly changesRepo: NoteChangeRepository,
   ) {}
 
-  async pushChanges(userId: string, notes: NoteEntity[]) {
+  async pushChanges(deviceId: string, notes: NoteEntity[]) {
     for (const note of notes) {
-      await this.notesRepo.updateIfNewer(note);
+      await this.notesRepo.updateIfNewer({
+        ...note,
+        version: JSON.stringify(note.version ?? {}),
+      });
 
       await this.changesRepo.logChange({
         noteId: note.id,
-        userId,
+        deviceId,
         version: note.version,
         updatedAt: note.updatedAt,
         payload: JSON.stringify(note),
@@ -29,7 +32,10 @@ export class SyncService {
   async pullChanges(userId: string, since: number) {
     const changes = await this.changesRepo.getChangesSince(userId, since);
 
-    const notes: NoteEntity[] = changes.map((ch) => JSON.parse(ch.payload));
+    const notes: NoteEntity[] = changes.map((ch) => ({
+      ...JSON.parse(ch.payload),
+      version: JSON.parse(JSON.parse(ch.payload).version || '{}'),
+    }));
 
     return {
       notes,
