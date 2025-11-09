@@ -9,7 +9,7 @@ export class NoteChangeEntity {
   noteId: string;
 
   @Column('text')
-  userId: string;
+  deviceId: string;
 
   @Column('integer')
   updatedAt: number;

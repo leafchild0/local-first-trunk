@@ -15,9 +15,9 @@ export class NoteChangeRepository {
     return this.repo.save(change);
   }
 
-  getChangesSince(userId: string, since: number) {
+  getChangesSince(deviceId: string, since: number) {
     return this.repo.find({
-      where: { userId, updatedAt: MoreThan(since) },
+      where: { deviceId, updatedAt: MoreThan(since) },
     });
   }
 }
