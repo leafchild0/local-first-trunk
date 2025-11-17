@@ -5,7 +5,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 const PUSH_URL = `${API_BASE}/sync/push`;
 const PULL_URL = `${API_BASE}/sync/pull`;
 
-const DEVICE_KEY = 'kb_device_id';
+const DEVICE_KEY = 'device_id';
+const LAST_SYNC_KEY = 'last_sync';
 
 export const useSyncNotes = () => {
 
@@ -21,7 +22,7 @@ export const useSyncNotes = () => {
 
   const pullNotes = async (): Promise<{ pulled: number }> => {
     const deviceId = getDeviceId();
-    const lastSync = Number(localStorage.getItem('kb_last_sync') || 0);
+    const lastSync = Number(localStorage.getItem(LAST_SYNC_KEY) || 0);
     const url = new URL(PULL_URL);
     url.searchParams.set('deviceId', deviceId);
     url.searchParams.set('since', String(lastSync));
@@ -44,7 +45,7 @@ export const useSyncNotes = () => {
       }
     }
 
-    localStorage.setItem('kb_last_sync', String(serverTime));
+    localStorage.setItem(LAST_SYNC_KEY, String(serverTime));
     return {pulled: notes.length};
   }
 
@@ -53,7 +54,6 @@ export const useSyncNotes = () => {
     const payload = {
       deviceId,
       notes: changedNotes,
-      clientTime: Date.now(),
     };
 
     const res = await fetch(PUSH_URL, {
