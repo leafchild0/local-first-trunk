@@ -3,17 +3,15 @@ import { defineStore } from 'pinia';
 import { db } from '@/data';
 import type { Note } from '@lft/shared';
 import { nanoid } from 'nanoid';
-import {incrementVector} from "@/sync/versionVector.ts";
+import { incrementVector } from "@/sync/versionVector.ts";
+import { useSyncNotes } from "@/sync/syncNotes.ts";
 
 export const useNotes = defineStore('notes', () => {
   const notes = ref<Note[]>([]);
   const loading = ref(true);
+  const { getDeviceId, pushNotes } = useSyncNotes();
 
-    const deviceId = localStorage.getItem('deviceId') ?? (() => {
-        const id = crypto.randomUUID();
-        localStorage.setItem('deviceId', id);
-        return id;
-    })();
+    const deviceId = getDeviceId();
 
     function nextVersionVector(old: Record<string, number> | undefined) {
         return incrementVector(old, deviceId);
@@ -70,6 +68,13 @@ export const useNotes = defineStore('notes', () => {
     await db.notes.put(updated);
     const idx = notes.value.findIndex((n: Note) => n.id === id);
     if (idx >= 0) notes.value[idx] = updated;
+
+    try {
+      await pushNotes([updated]);
+    } catch (err) {
+      console.warn('[sync] push failed, will retry later', err);
+    }
+
     return updated;
   }
 

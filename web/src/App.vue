@@ -13,13 +13,33 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import NoteList from './components/NoteList.vue';
   import NoteEditor from './components/NoteEditor.vue';
+  import { useNotes } from "@/store/useNotes.ts";
+  import { useSyncNotes } from "@/sync/syncNotes.ts";
 
   const selectedId = ref<string | null>(null);
+  const notesStore = useNotes();
+  const { pullNotes } = useSyncNotes();
+
   function select(id: string) { selectedId.value = id; }
   function onSaved() {
-    console.log('saved')
+    console.log('saved for testing')
   }
+
+  onMounted(async () => {
+    try {
+      // load local DB first
+      await notesStore.loadAll();
+
+      // then pull from server and merge
+      await pullNotes();
+
+      // reload store from db to show pulled notes
+      await notesStore.loadAll();
+    } catch (err) {
+      console.warn('[sync] pull failed', err);
+    }
+  });
 </script>
