@@ -1,5 +1,6 @@
 import { db } from '@/data';
 import type { Note } from '@lft/shared';
+import { mergeNotes } from './mergeNote';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 const PUSH_URL = `${API_BASE}/sync/push`;
@@ -32,17 +33,11 @@ export const useSyncNotes = () => {
     const payload = await res.json();
     const {notes = [], serverTime = Date.now()} = payload;
 
-    // Merge server notes into local DB: naive replacement if newer; uses updatedAt
+    // Merge server notes into local DB using version vector logic
     for (const s of notes) {
       const existing = await db.notes.get(s.id);
-      if (!existing) {
-        await db.notes.add(s);
-      } else {
-        // simple merge: accept server if updatedAt strictly newer
-        if ((s.updatedAt || 0) > (existing.updatedAt || 0)) {
-          await db.notes.put(s);
-        }
-      }
+      const merged = mergeNotes(existing, s);
+      await db.notes.put(merged);
     }
 
     localStorage.setItem(LAST_SYNC_KEY, String(serverTime));

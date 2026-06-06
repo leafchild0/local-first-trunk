@@ -17,9 +17,9 @@ export const useNotes = defineStore('notes', () => {
         return incrementVector(old, deviceId);
     }
 
-    async function loadAll() {
+  async function loadAll() {
     loading.value = true;
-    notes.value = await db.notes.toArray();
+    notes.value = (await db.notes.toArray()).filter((n: Note) => !n.deleted);
     loading.value = false;
   }
 
@@ -79,8 +79,22 @@ export const useNotes = defineStore('notes', () => {
   }
 
   async function deleteNote(id: string) {
-    await db.notes.update(id, { deleted: true, updatedAt: Date.now() });
-	  notes.value = notes.value.filter((n: Note) => n.id !== id);
+    const note = await db.notes.get(id);
+    if (!note) return;
+    const updated = {
+      ...note,
+      deleted: true,
+      updatedAt: Date.now(),
+      version: nextVersionVector(note.version)
+    };
+    await db.notes.put(updated);
+    notes.value = notes.value.filter((n: Note) => n.id !== id);
+
+    try {
+      await pushNotes([updated]);
+    } catch (err) {
+      console.warn('[sync] push deletion failed, will retry later', err);
+    }
   }
 
   return { notes, loading, loadAll, createNote, updateNote, deleteNote, exportAll };
