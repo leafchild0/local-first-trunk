@@ -7,6 +7,7 @@ export const mini = new MiniSearch({
 });
 
 export function rebuild(notes: Note[]) {
+  mini.removeAll();
   mini.addAll(notes);
 }
 
