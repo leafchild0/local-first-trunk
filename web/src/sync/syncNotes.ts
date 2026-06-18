@@ -1,13 +1,23 @@
 import { db } from '@/data';
 import type { Note } from '@lft/shared';
 import { mergeNotes } from './mergeNote';
+import { API_BASE } from './syncConfig';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 const PUSH_URL = `${API_BASE}/sync/push`;
 const PULL_URL = `${API_BASE}/sync/pull`;
 
 const DEVICE_KEY = 'device_id';
-const LAST_SYNC_KEY = 'last_sync';
+export const LAST_SYNC_KEY = 'last_sync';
+
+export async function mergeRemoteNotes(notes: Note[]): Promise<number> {
+  for (const remoteNote of notes) {
+    const existing = await db.notes.get(remoteNote.id);
+    const merged = mergeNotes(existing, remoteNote);
+    await db.notes.put(merged);
+  }
+
+  return notes.length;
+}
 
 export const useSyncNotes = () => {
 
@@ -33,12 +43,7 @@ export const useSyncNotes = () => {
     const payload = await res.json();
     const {notes = [], serverTime = Date.now()} = payload;
 
-    // Merge server notes into local DB using version vector logic
-    for (const s of notes) {
-      const existing = await db.notes.get(s.id);
-      const merged = mergeNotes(existing, s);
-      await db.notes.put(merged);
-    }
+    await mergeRemoteNotes(notes);
 
     localStorage.setItem(LAST_SYNC_KEY, String(serverTime));
     return {pulled: notes.length};

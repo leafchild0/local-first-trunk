@@ -23,6 +23,15 @@ $ pnpm preview
 $ pnpm lint
 ```
 
+## Sync transport
+
+The client uses polling by default. To try the Nest SSE feed at `/feed`, run the
+web app with:
+
+```bash
+VITE_SYNC_TRANSPORT=sse pnpm dev
+```
+
 ## Motivation
 ⚙️ Core Idea — What “Local-First” Actually Means
 
