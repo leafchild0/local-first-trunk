@@ -17,11 +17,14 @@
   import NoteList from './components/NoteList.vue';
   import NoteEditor from './components/NoteEditor.vue';
   import { useSyncNotes } from "@/sync/syncNotes.ts";
+  import { connectSyncFeed } from "@/sync/syncFeed.ts";
+  import { SYNC_TRANSPORT } from "@/sync/syncConfig.ts";
 
   const selectedId = ref<string | null>(null);
   const { pullNotes } = useSyncNotes();
 
   let pollInterval: ReturnType<typeof setInterval> | null = null;
+  let syncFeed: EventSource | null = null;
   const POLL_INTERVAL_MS = 5000;
 
   function select(id: string) { selectedId.value = id; }
@@ -49,16 +52,23 @@
   }
 
   onMounted(async () => {
-    // Perform initial sync pull
     await syncNotesCoordinated();
 
-    // Start background polling
+    if (SYNC_TRANSPORT === 'sse') {
+      syncFeed = connectSyncFeed();
+      return;
+    }
+
     pollInterval = setInterval(syncNotesCoordinated, POLL_INTERVAL_MS);
   });
 
   onUnmounted(() => {
     if (pollInterval) {
       clearInterval(pollInterval);
+    }
+
+    if (syncFeed) {
+      syncFeed.close();
     }
   });
 </script>
