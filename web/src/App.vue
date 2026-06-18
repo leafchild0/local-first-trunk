@@ -13,33 +13,52 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, onUnmounted } from 'vue';
   import NoteList from './components/NoteList.vue';
   import NoteEditor from './components/NoteEditor.vue';
-  import { useNotes } from "@/store/useNotes.ts";
   import { useSyncNotes } from "@/sync/syncNotes.ts";
 
   const selectedId = ref<string | null>(null);
-  const notesStore = useNotes();
   const { pullNotes } = useSyncNotes();
+
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  const POLL_INTERVAL_MS = 5000;
 
   function select(id: string) { selectedId.value = id; }
   function onSaved() {
     console.log('saved for testing')
   }
 
-  onMounted(async () => {
+  async function syncNotesCoordinated() {
+    const lastAttempt = Number(localStorage.getItem('last_poll_attempt') || 0);
+    const now = Date.now();
+
+    // Coordinated check: if another tab pulled recently, skip.
+    if (now - lastAttempt < POLL_INTERVAL_MS - 500) { // Add 500ms grace buffer for timing jitter
+      return;
+    }
+
+    // Set timestamp to flag other tabs
+    localStorage.setItem('last_poll_attempt', String(now));
+
     try {
-      // load local DB first
-      await notesStore.loadAll();
-
-      // then pull from server and merge
       await pullNotes();
-
-      // reload store from db to show pulled notes
-      await notesStore.loadAll();
     } catch (err) {
-      console.warn('[sync] pull failed', err);
+      console.warn('[sync] coordinated pull failed', err);
+    }
+  }
+
+  onMounted(async () => {
+    // Perform initial sync pull
+    await syncNotesCoordinated();
+
+    // Start background polling
+    pollInterval = setInterval(syncNotesCoordinated, POLL_INTERVAL_MS);
+  });
+
+  onUnmounted(() => {
+    if (pollInterval) {
+      clearInterval(pollInterval);
     }
   });
 </script>

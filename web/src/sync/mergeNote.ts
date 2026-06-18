@@ -36,6 +36,7 @@ function mergeConcurrent(local: Note, remote: Note): Note {
 
   return {
     ...local,
+    deleted: local.deleted || remote.deleted,
     content: mergedContent,
     title: local.title === remote.title ? local.title : local.title + " / " + remote.title,
     tags: Array.from(new Set([...local.tags, ...remote.tags])),

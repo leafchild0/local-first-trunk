@@ -40,13 +40,21 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, watch } from 'vue';
   import { useNotes } from '@/store/useNotes';
+  import { rebuild, search } from '@/utils/search';
+  import type { Note } from '@lft/shared';
+
   const emit = defineEmits(['select']);
   const q = ref('');
   const store = useNotes();
 
   store.loadAll();
+
+  // Rebuild the search index whenever store notes are updated
+  watch(() => store.notes, (newNotes) => {
+    rebuild(newNotes);
+  }, { deep: true, immediate: true });
 
   const newNote = async () => {
     const n = await store.createNote({ title: 'New note' });
@@ -55,7 +63,10 @@
 
   const filtered = computed(() => {
     if (!q.value) return store.notes;
-    return store.notes.filter(n => n.title.includes(q.value) || n.content.includes(q.value));
+    const results = search(q.value);
+    return results
+      .map(r => store.notes.find(n => n.id === r.id))
+      .filter((n): n is Note => !!n);
   });
 
   const exportAll = async () => {

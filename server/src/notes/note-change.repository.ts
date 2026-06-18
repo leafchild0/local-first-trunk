@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NoteChangeEntity } from './note-change.entity';
-import { MoreThan } from 'typeorm';
+import { MoreThan, Not } from 'typeorm';
 
 @Injectable()
 export class NoteChangeRepository {
@@ -17,7 +17,11 @@ export class NoteChangeRepository {
 
   getChangesSince(deviceId: string, since: number) {
     return this.repo.find({
-      where: { deviceId, updatedAt: MoreThan(since) },
+      where: {
+        deviceId: Not(deviceId),
+        updatedAt: MoreThan(since),
+      },
     });
   }
 }
+

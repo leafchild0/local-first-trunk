@@ -57,13 +57,31 @@
 
   const local = ref<Partial<Note>>({ title: '', content: '' });
   const dirty = ref(false);
+  const lastLoadedId = ref<string | null>(null);
 
-  watch(() => props.noteId, async (id) => {
-    if (!id) { local.value = { title: '', content: '' }; return; }
-    const n = store.notes.find(x => x.id === id);
-    if (n) local.value = { ...n };
-    dirty.value = false;
+  const activeNote = computed(() => {
+    if (!props.noteId) return null;
+    return store.notes.find(x => x.id === props.noteId) || null;
   });
+
+  watch(activeNote, (newNote) => {
+    if (!newNote) {
+      local.value = { title: '', content: '' };
+      dirty.value = false;
+      lastLoadedId.value = null;
+      return;
+    }
+
+    const idChanged = newNote.id !== lastLoadedId.value;
+
+    // Update the local state if the user switched notes, OR
+    // if the note was updated externally and there are no unsaved local changes.
+    if (idChanged || !dirty.value) {
+      local.value = { ...newNote };
+      dirty.value = false;
+      lastLoadedId.value = newNote.id;
+    }
+  }, { deep: true, immediate: true });
 
   function markDirty() { dirty.value = true; }
 
